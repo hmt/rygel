@@ -66,6 +66,7 @@ internal abstract class Rygel.HTTPGetHandler: GLib.Object {
         // headers such as Samsung's subtitle stuff.
         if (request.hack != null) {
             request.hack.modify_headers (request);
+                                         null,
         }
 
         request.msg.response_headers.append ("Connection", "close");

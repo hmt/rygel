@@ -58,6 +58,18 @@ public class Rygel.HTTPServer : Rygel.TranscodeManager, Rygel.StateMachine {
         }
     }
 
+    /**
+     * Set or unset options the server supports/doesn't support
+     *
+     * Resources should be setup assuming server supports all optional delivery modes
+     */
+    public void set_resource_delivery_options (MediaResource res) {
+        res.protocol = this.get_protocol ();
+        // Set this just to be safe
+        res.dlna_flags |= DLNAFlags.DLNA_V15;
+        // This server supports all DLNA delivery modes - so leave those flags alone
+     }
+
     internal void add_proxy_resource (DIDLLiteItem  didl_item,
                                       MediaFileItem item)
                                       throws Error {
@@ -65,7 +77,7 @@ public class Rygel.HTTPServer : Rygel.TranscodeManager, Rygel.StateMachine {
             return;
         }
 
-        var uri = this.create_uri_for_object (item, -1, -1, null, null);
+        var uri = this.create_uri_for_object (item, -1, -1, null, null, null);
 
         item.add_resource (didl_item, uri, this.get_protocol (), uri);
     }
@@ -101,13 +113,15 @@ public class Rygel.HTTPServer : Rygel.TranscodeManager, Rygel.StateMachine {
                                                     int         thumbnail_index,
                                                     int         subtitle_index,
                                                     string?     transcode_target,
-                                                    string?     playlist_target) {
+                                                    string?     playlist_target,
+                                                    string?     resource_name) {
         var uri = new HTTPItemURI (object,
                                    this,
                                    thumbnail_index,
                                    subtitle_index,
                                    transcode_target,
-                                   playlist_target);
+                                   playlist_target,
+                                   resource_name);
 
         return uri.to_string ();
     }
