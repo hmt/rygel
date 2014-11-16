@@ -228,6 +228,23 @@ public abstract class Rygel.MediaObject : GLib.Object {
                                                HTTPServer http_server)
                                                throws Error;
 
+    /**
+     * Serialize the resource list
+     *
+     * Any resource with an empty URIs will get a resource-based HTTP URI and have its protocol
+     * and delivery options adjusted to the HTTPServer.
+     *
+     * Internal (e.g. "file:") resources will only be included when the http server
+     * is on the local host.
+     *
+     * Resources will be serialized in list order.
+     */
+    public void serialize_resource_list (DIDLLiteObject didl_object,
+                                         HTTPServer     http_server)
+                                         throws Error {
+    }
+
+
     internal virtual void apply_didl_lite (DIDLLiteObject didl_object) {
         this.title = didl_object.title;
         this.artist = this.get_first (didl_object.get_artists ());
