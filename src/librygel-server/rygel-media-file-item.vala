@@ -203,34 +203,45 @@ public abstract class Rygel.MediaFileItem : MediaItem {
     internal override DIDLLiteObject? serialize (Serializer serializer,
                                                  HTTPServer http_server)
                                                  throws Error {
-        var didl_item = base.serialize (serializer, http_server)
-                                        as DIDLLiteItem;
-
-        /* We list proxy/transcoding resources first instead of original URIs
-         * because some crappy MediaRenderer/ControlPoint implemenation out
-         * there just choose the first one in the list instead of the one they
-         * can handle.
-         */
-        this.add_proxy_resources (http_server, didl_item);
+        var didl_item = base.serialize (serializer, http_server) as DIDLLiteItem;
 
         if (!this.place_holder) {
-            var host_ip = http_server.context.host_ip;
+            // Subclasses can override add_resources and augment the media resource list (which
+            //  should contain the primary resource representations for the MediaItem
+            //  at this point) with any secondary representations or alternate delivery
+            //  mechanisms they can provide
+            this.add_additional_resources (http_server);
 
-            // then original URIs
-            bool internal_allowed;
-            internal_allowed = http_server.context.interface == "lo" ||
-                               host_ip == "127.0.0.1";
-            this.add_resources (didl_item, internal_allowed);
-
-            foreach (var res in didl_item.get_resources ()) {
-                res.uri = MediaFileItem.address_regex.replace_literal (res.uri,
-                                                                       -1,
-                                                                       0,
-                                                                       host_ip);
-            }
+            this.serialize_resource_list (didl_item, http_server);
         }
 
         return didl_item;
+    }
+
+    /**
+     * Subclasses override this method to create the type-specific primary MediaResource.
+     *
+     * The resource returned is presumed to represent the "internal" file resource and
+     * a uri referring to the source file. Transport-specific variants can be created
+     * by the caller.
+     */
+    public virtual MediaResource get_primary_resource () {
+        var res = new MediaResource ("primary");
+
+        res.mime_type = this.mime_type;
+        res.dlna_profile = this.dlna_profile;
+        res.dlna_flags = DLNAFlags.BACKGROUND_TRANSFER_MODE;
+
+        // MediaFileItems refer directly to the source URI
+        res.uri = this.get_primary_uri ();
+        try {
+            res.protocol = this.get_protocol_for_uri (res.uri);
+        } catch (Error e) {
+            warning ("Could not determine protocol for " + res.uri);
+        }
+        //res.extension = get_extension ();
+        res.size = this.size;
+        return res;
     }
 
     internal virtual void add_proxy_resources (HTTPServer   server,
@@ -273,5 +284,19 @@ public abstract class Rygel.MediaFileItem : MediaItem {
                 this.add_resource (didl_item, uri, protocol);
             }
         }
+    }
+
+    /**
+     * Subclasses can override this method to augment the MediaObject MediaResource
+     * list with secondary MediaResource objects representing derivative resources.
+     *
+     * Note: Implementations should add both internal/file-based resources and HTTP-accessible
+     *       resources to the MediaResource list.
+     * FIXME: Will be renamed once we can safely remove old add_resources
+     */
+    internal virtual void add_additional_resources (HTTPServer server) {
+        /* Do nothing - provide default implementation to avoid unnecessary
+           empty code blocks.
+         */
     }
 }
