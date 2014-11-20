@@ -113,8 +113,6 @@ public class Rygel.VideoItem : AudioItem, VisualItem {
         }
 
         base.add_resources (didl_item, allow_internal);
-
-        this.add_thumbnail_resources (didl_item, allow_internal);
     }
 
     internal override DIDLLiteResource add_resource

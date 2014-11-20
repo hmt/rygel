@@ -92,7 +92,7 @@ public class Rygel.ImageItem : MediaFileItem, VisualItem {
                                           throws Error {
         base.add_resources (didl_item, allow_internal);
 
-        this.add_thumbnail_resources (didl_item, allow_internal);
+//        this.add_thumbnail_resources (didl_item, allow_internal);
     }
 
     internal override DIDLLiteResource add_resource
@@ -127,4 +127,11 @@ public class Rygel.ImageItem : MediaFileItem, VisualItem {
 
         return protocol_info;
     }
+
+    internal override void add_additional_resources (HTTPServer server) {
+        base.add_additional_resources (server);
+
+        this.add_thumbnail_resources (server);
+    }
+
 }
