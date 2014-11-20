@@ -77,4 +77,25 @@ public class Rygel.Thumbnail : Rygel.IconInfo {
 
         return protocol_info;
     }
+
+    internal virtual MediaResource get_resource (string protocol) {
+        MediaResource res = new MediaResource (protocol + "_thumbnail");
+
+        res.size = this.size;
+        res.width = this.width;
+        res.height = this.height;
+        res.color_depth = this.depth;
+        res.mime_type = this.mime_type;
+        res.dlna_profile = this.dlna_profile;
+        res.protocol = protocol;
+        // Note: These represent best-case. The MediaServer/HTTPServer can dial these back
+        res.dlna_flags |= DLNAFlags.INTERACTIVE_TRANSFER_MODE |
+                          DLNAFlags.BACKGROUND_TRANSFER_MODE |
+                          DLNAFlags.CONNECTION_STALL |
+                          DLNAFlags.DLNA_V15;
+        res.dlna_operation = DLNAOperation.RANGE;
+        res.dlna_conversion = DLNAConversion.TRANSCODED;
+
+        return res;
+    }
 }
